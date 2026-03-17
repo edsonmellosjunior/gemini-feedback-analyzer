@@ -1,43 +1,50 @@
 from google import genai
 import os
 from dotenv import load_dotenv
+import json
 
-# Carrega as variáveis do arquivo .env
 load_dotenv()
-
-# Configura o cliente moderno
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# --- NOVO PROMPT ESTRUTURADO ---
-instrucao_sistema = """
-Role: You are a senior Customer Experience (CX) specialist.
-Goal: Produce a sentiment classification for a support team that achieves high accuracy in identifying business success.
-
-Context:
-- Project: Automated feedback analysis for a tech company.
-- Inputs: Raw customer text strings.
-- Assumptions: Focus on the resolution of the problem as the primary metric.
-
+# System instruction now includes a clearer "Contract"
+system_instruction = """
+Role: Senior Customer Experience Specialist.
 Instructions:
-- If the input is clear: respond with a single word (POSITIVO, NEGATIVO, NEUTRO).
-- If the input is ambiguous or empty: ASK a clarifying question instead of classifying.
-
-Quality checks:
-- Verify if the problem was solved. If it was, prioritize POSITIVO even if there were delays.
-- If something is ambiguous, ask one clarifying question before producing the final result.
-- Is the input just punctuation or empty? If yes, DO NOT classify. Ask for more details.
-Now create the classification.
+- Analyze feedback into a JSON object.
+- Keys: "sentiment" (POSITIVE/NEGATIVE/NEUTRAL), "subject", "urgency" (1, 2, or 3).
+- Urgency levels: 1=Low, 2=Medium, 3=High.
+- Output ONLY valid JSON.
 """
 
-# Testando o modelo com a nova biblioteca
-#feedback = "O suporte demorou muito para responder, mas resolveu o problema."
-feedback = "..."
+feedback = "Excellent service! They solved my problem quickly and with great attention."
 
-response = client.models.generate_content(
-    model="gemini-2.0-flash", # Usando a versão mais atual disponível
-    config={'system_instruction': instrucao_sistema},
-    contents=feedback
-)
+try:
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        config={
+            'system_instruction': system_instruction,
+            'response_mime_type': 'application/json', 
+        },
+        contents=feedback
+    )
 
-print(f"Feedback: {feedback}")
-print(f"Classificação: {response.text}")
+    data = json.loads(response.text)
+    
+    # Mapping numbers to labels
+    urgency_map = {1: "LOW", 2: "MEDIUM", 3: "HIGH"}
+    final_urgency = urgency_map.get(data.get('urgency'), "UNKNOWN")
+
+    # Cost Calculation
+    usage = response.usage_metadata
+    cost = (usage.prompt_token_count * 0.0000001) + (usage.candidates_token_count * 0.0000004)
+
+    print("\n" + "="*40)
+    print(f"😊 Sentiment: {data.get('sentiment')}")
+    print(f"📁 Subject: {data.get('subject')}")
+    print(f"🚨 Urgency: {final_urgency}")
+    print("-" * 40)
+    print(f"💰 Estimated Cost: ${cost:.6f}")
+    print("="*40 + "\n")
+
+except Exception as e:
+    print(f"🚨 Error: {e}")

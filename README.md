@@ -1,11 +1,20 @@
-# Estudo da API do Gemini 🚀
+# Gemini API Study 🚀
 
-Este projeto faz parte do meu aprendizado sobre a API do Gemini, focado em:
-- Configuração de ambiente e segurança 🛡️
-- Engenharia de Prompts (Prompt Engineering) 🧠
-- Integração com Python e GitHub 🐙
+An automated system to analyze customer feedback using Google's Gemini 2.0 Flash model.
 
-## Como executar
-1. Crie um arquivo `.env` com sua `GEMINI_API_KEY`.
-2. Instale as dependências: `pip install google-genai python-dotenv`.
-3. Execute: `python estudo_gemini.py`.
+## Features
+- **Sentiment Analysis:** Classifies feedback as POSITIVE, NEGATIVE, or NEUTRAL.
+- **Categorization:** Identifies the main subject of the customer's message.
+- **Urgency Scoring:** Maps priority levels (1-3) for support teams.
+- **Cost Tracking:** Real-time calculation of token usage and API costs.
+
+## Tech Stack
+- Python 3.x
+- Google GenAI SDK
+- Dotenv (Environment Variables)
+
+## Setup
+1. Clone the repo: `git clone https://github.com/edsonmellosjunior/estudo-gemini-api.git`
+2. Install dependencies: `pip install google-genai python-dotenv`
+3. Create a `.env` file with your `GEMINI_API_KEY`.
+4. Run: `python study_gemini.py`
